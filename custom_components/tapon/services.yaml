@@ -2,7 +2,7 @@ take_bottle:
   fields:
     code:
       required: true
-      example: "https://www.home-assistant.io/tag/suro-k7m2xq9p"
+      example: "https://www.home-assistant.io/tag/tapon-k7m2xq9p"
       selector:
         text:
 print_label:

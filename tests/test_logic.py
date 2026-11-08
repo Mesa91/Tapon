@@ -12,24 +12,26 @@ def test_codes_unique_and_scans_round_trip():
     code = next(iter(codes))
     for raw in (lg.tag_id_for(code), lg.qr_payload_for(code), lg.qr_payload_for(code) + "/"):
         assert lg.parse_scanned(raw) == lg.Scanned("bottle", code=code)
-    for raw in (None, "", "front-door", "suro-", "suro-OOO0", "corkdork-abc"):
+    for raw in (None, "", "front-door", "tapon-", "tapon-OOO0", "corkdork-abc"):
         assert lg.parse_scanned(raw) is None
 
 
 def test_labels_printed_as_taponbon_still_scan():
     assert lg.parse_scanned("https://www.home-assistant.io/tag/taponbon-k7m2xq9p") == lg.Scanned("bottle", code="k7m2xq9p")
     assert lg.parse_scanned("taponbon-slot-rack-a/1/2") == lg.Scanned("slot", rack_id="rack-a", row=1, col=2)
-    assert lg.tag_id_for("k7m2xq9p") == "suro-k7m2xq9p"
+    assert lg.parse_scanned("suro-k7m2xq9p") == lg.Scanned("bottle", code="k7m2xq9p")
+    assert lg.parse_scanned("suro-slot-rack-a/1/2") == lg.Scanned("slot", rack_id="rack-a", row=1, col=2)
+    assert lg.tag_id_for("k7m2xq9p") == "tapon-k7m2xq9p"
 
 
 def test_dashboards_are_rewritten_for_the_new_name():
     from tb.migrate import rewrite_dashboard
 
-    cfg = {"views": [{"cards": [{"type": "custom:taponbon-card"}, {"type": "entity", "entity": "sensor.taponbon_bottiglie"},
+    cfg = {"views": [{"cards": [{"type": "custom:suro-card"}, {"type": "entity", "entity": "sensor.taponbon_bottiglie"},
                                 {"type": "markdown", "content": "Èccomi"}]}]}
     new, changed = rewrite_dashboard(cfg)
-    assert changed and new["views"][0]["cards"][0]["type"] == "custom:suro-card"
-    assert new["views"][0]["cards"][1]["entity"] == "sensor.suro_bottiglie"
+    assert changed and new["views"][0]["cards"][0]["type"] == "custom:tapon-card"
+    assert new["views"][0]["cards"][1]["entity"] == "sensor.tapon_bottiglie"
     assert new["views"][0]["cards"][2]["content"] == "Èccomi"
     assert rewrite_dashboard(new) == (new, False)
 
@@ -95,7 +97,7 @@ def test_niimbot_payload_sizes():
     p = labels.niimbot_payload("k7m2xq9p", ["Barolo"], "qr30")
     assert (p["width"], p["height"]) == (240, 240)
     qr = p["payload"][0]
-    assert qr["type"] == "qrcode" and qr["data"].endswith("suro-k7m2xq9p")
+    assert qr["type"] == "qrcode" and qr["data"].endswith("tapon-k7m2xq9p")
     assert qr["x"] + qr["width"] <= 240 and qr["y"] + qr["height"] <= 240
     full = labels.niimbot_payload("k7m2xq9p", ["Barolo", "2016 · Rosso", "Brezza", "Scaffale"], "full")
     assert (full["width"], full["height"]) == (400, 240) and len(full["payload"]) == 6

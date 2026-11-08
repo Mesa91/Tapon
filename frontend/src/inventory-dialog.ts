@@ -16,7 +16,7 @@ export class InventoryDialog extends LitElement {
   connectedCallback() {
     super.connectedCallback();
     if (this.report?.found_taken.length) {
-      this.card.ws({ type: "suro/get_history" }).then((r: { history: HistoryEntry[] }) => (this._history = r.history));
+      this.card.ws({ type: "tapon/get_history" }).then((r: { history: HistoryEntry[] }) => (this._history = r.history));
     }
   }
 
@@ -27,7 +27,7 @@ export class InventoryDialog extends LitElement {
   private async _removeMissing(ids: string[]) {
     this._busy = true;
     try {
-      const res = await this.card.ws({ type: "suro/remove_bottles", bottle_ids: ids, reason: "missing" });
+      const res = await this.card.ws({ type: "tapon/remove_bottles", bottle_ids: ids, reason: "missing" });
       ids.forEach((id) => this._done.add(id));
       this._done = new Set(this._done);
       this.card.toast(`${res.removed} bottiglie tolte come "non trovate": le ritrovi nello storico`);
@@ -39,7 +39,7 @@ export class InventoryDialog extends LitElement {
   private async _restore(ids: string[]) {
     this._busy = true;
     try {
-      for (const id of ids) await this.card.ws({ type: "suro/restore", history_id: id });
+      for (const id of ids) await this.card.ws({ type: "tapon/restore", history_id: id });
       ids.forEach((id) => this._done.add(id));
       this._done = new Set(this._done);
       this.card.toast(ids.length > 1 ? `${ids.length} bottiglie rimesse in cantina` : "Rimessa in cantina");

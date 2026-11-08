@@ -56,7 +56,7 @@ export class RacksDialog extends LitElement {
 
   private async _save(rack: Rack) {
     const d = this._draft(rack);
-    const res = await this.card.ws({ type: "suro/save_rack", rack: { id: rack.id, name: d.name, shelves: d.shelves } });
+    const res = await this.card.ws({ type: "tapon/save_rack", rack: { id: rack.id, name: d.name, shelves: d.shelves } });
     const copy = { ...this._drafts };
     delete copy[rack.id];
     this._drafts = copy;
@@ -66,20 +66,20 @@ export class RacksDialog extends LitElement {
   private async _delete(rack: Rack) {
     const n = this._count(rack.id);
     if (!confirm(`Eliminare "${rack.name}"?${n ? ` Le sue ${n} bottiglie restano in cantina, in "Da sistemare".` : ""}`)) return;
-    await this.card.ws({ type: "suro/delete_rack", rack_id: rack.id });
+    await this.card.ws({ type: "tapon/delete_rack", rack_id: rack.id });
     this.card.toast("Scaffale eliminato");
   }
 
   private async _add() {
     const res = await this.card.ws({
-      type: "suro/save_rack",
+      type: "tapon/save_rack",
       rack: { name: `Scaffale ${this.data.racks.length + 1}`, shelves: [8, 8, 8, 8, 8] },
     });
     this._open = res.rack.id;
   }
 
   private async _setting(key: string, value: unknown) {
-    await this.card.ws({ type: "suro/update_settings", [key]: value });
+    await this.card.ws({ type: "tapon/update_settings", [key]: value });
   }
 
   private _stepper(value: number, set: (v: number) => void) {
@@ -149,7 +149,7 @@ export class RacksDialog extends LitElement {
   }
 
   private async _inventory(rackId: string | null) {
-    await this.card.ws({ type: "suro/inventory_start", rack_id: rackId });
+    await this.card.ws({ type: "tapon/inventory_start", rack_id: rackId });
     this.card.toast("Inventario avviato: scansiona le bottiglie");
     this._close();
   }

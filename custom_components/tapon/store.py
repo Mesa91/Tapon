@@ -1,4 +1,4 @@
-"""Persisted data: racks, bottles, history, settings (``.storage/suro``).
+"""Persisted data: racks, bottles, history, settings (``.storage/tapon``).
 
 One record per physical bottle. Wine details are copied onto each bottle,
 so a bottle stays self-contained when it moves to the history.
@@ -47,14 +47,14 @@ def clean_wine(data: dict[str, Any]) -> dict[str, Any]:
     return out
 
 
-class SuroStore:
+class TaponStore:
     """All cellar data, with the operations the card and services need."""
 
     def __init__(self, hass: HomeAssistant) -> None:
         self.hass = hass
         self._store = Store(hass, STORAGE_VERSION, STORAGE_KEY)
         self.data: dict[str, Any] = {}
-        self.imported = False  # data copied from the old TaponBon storage
+        self.imported = False  # data copied from the Suro or TaponBon storage
 
     # ── persistence ──────────────────────────────────────────────────────────
 

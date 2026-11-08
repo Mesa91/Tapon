@@ -20,7 +20,7 @@ export class HistoryDialog extends LitElement {
   }
 
   private async _load() {
-    const res = await this.card.ws({ type: "suro/get_history" });
+    const res = await this.card.ws({ type: "tapon/get_history" });
     this._items = res.history;
   }
 
@@ -29,7 +29,7 @@ export class HistoryDialog extends LitElement {
   }
 
   private async _restore(item: HistoryEntry) {
-    const res = await this.card.ws({ type: "suro/restore", history_id: item.history_id });
+    const res = await this.card.ws({ type: "tapon/restore", history_id: item.history_id });
     this.card.toast(res.bottle.rack_id ? "Rimessa al suo posto" : "Rimessa in cantina, in \"Da sistemare\"");
     this._load();
   }
@@ -42,7 +42,7 @@ export class HistoryDialog extends LitElement {
 
   private async _saveRating(h: HistoryEntry) {
     const res = await this.card.ws({
-      type: "suro/rate_history", history_id: h.history_id,
+      type: "tapon/rate_history", history_id: h.history_id,
       rating: this._stars, tasting_notes: this._tasting.trim(),
     });
     this._editing = null;

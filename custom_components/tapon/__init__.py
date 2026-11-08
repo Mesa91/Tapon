@@ -1,4 +1,4 @@
-"""Suro: la cantina dei vini in Home Assistant."""
+"""Tapon: la cantina dei vini in Home Assistant."""
 
 from __future__ import annotations
 
@@ -17,7 +17,7 @@ from homeassistant.helpers import config_validation as cv
 
 from . import core, migrate, websocket
 from .const import CARD_URL, CARD_VERSION, DOMAIN
-from .store import SuroStore
+from .store import TaponStore
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -27,7 +27,7 @@ CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)
 
 async def async_setup(hass: HomeAssistant, config: dict) -> bool:
     """Serve the card and load it on every dashboard (once per HA start)."""
-    card = Path(__file__).parent / "frontend" / "suro-card.js"
+    card = Path(__file__).parent / "frontend" / "tapon-card.js"
     await hass.http.async_register_static_paths([StaticPathConfig(CARD_URL, str(card), False)])
     websocket.async_register(hass)
 
@@ -83,7 +83,7 @@ async def _async_register_resource(hass: HomeAssistant) -> bool:
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
-    store = SuroStore(hass)
+    store = TaponStore(hass)
     await store.async_load()
     hass.data.setdefault(DOMAIN, {})["store"] = store
     if store.imported:
@@ -125,13 +125,13 @@ def _register_services(hass: HomeAssistant) -> None:
     def _require_store():
         store = core.get_store(hass)
         if store is None:
-            raise HomeAssistantError("Suro non è configurato")
+            raise HomeAssistantError("Tapon non è configurato")
         return store
 
     async def take_bottle(call: ServiceCall) -> ServiceResponse:
         result = await core.async_take_scanned(hass, call.data["code"], source="service")
         if result["result"] == "not_ours":
-            raise HomeAssistantError(f"Non è un codice Suro: {call.data['code']}")
+            raise HomeAssistantError(f"Non è un codice Tapon: {call.data['code']}")
         if not call.return_response:
             return None
         bottle = result.get("bottle") or {}

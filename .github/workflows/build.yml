@@ -32,21 +32,21 @@ jobs:
           npm install --no-audit --no-fund
           npx tsc --noEmit -p tsconfig.json
           npm run build
-          node --check ../custom_components/suro/frontend/suro-card.js
+          node --check ../custom_components/tapon/frontend/tapon-card.js
       - name: Salva il file compilato
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add custom_components/suro/frontend/suro-card.js
+          git add custom_components/tapon/frontend/tapon-card.js
           git diff --cached --quiet || git commit -m "Ricompila la card"
           git push
       - name: Pubblica la release
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          VERSION=$(python3 -c "import json;print(json.load(open('custom_components/suro/manifest.json'))['version'])")
+          VERSION=$(python3 -c "import json;print(json.load(open('custom_components/tapon/manifest.json'))['version'])")
           if gh release view "v$VERSION" >/dev/null 2>&1; then
             echo "La release v$VERSION esiste già"
           else
-            gh release create "v$VERSION" --target "$(git rev-parse HEAD)" --title "Suro $VERSION" --generate-notes
+            gh release create "v$VERSION" --target "$(git rev-parse HEAD)" --title "Tapon $VERSION" --generate-notes
           fi

@@ -6,7 +6,7 @@ import pathlib
 import sys
 import types
 
-ROOT = pathlib.Path(__file__).resolve().parents[1] / "custom_components" / "suro"
+ROOT = pathlib.Path(__file__).resolve().parents[1] / "custom_components" / "tapon"
 
 
 class FakeStore:
@@ -14,11 +14,11 @@ class FakeStore:
     old = None  # what the integration saved under its old name
     saves = 0
 
-    def __init__(self, hass=None, version=1, key="suro", **kwargs):
+    def __init__(self, hass=None, version=1, key="tapon", **kwargs):
         self.key = key
 
     async def async_load(self):
-        return copy.deepcopy(FakeStore.disk if self.key == "suro" else FakeStore.old)
+        return copy.deepcopy(FakeStore.disk if self.key == "tapon" else FakeStore.old)
 
     async def async_save(self, data):
         FakeStore.disk = copy.deepcopy(data)

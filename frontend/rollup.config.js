@@ -3,9 +3,9 @@ import typescript from "@rollup/plugin-typescript";
 import terser from "@rollup/plugin-terser";
 
 export default {
-  input: "src/suro-card.ts",
+  input: "src/tapon-card.ts",
   output: {
-    file: "../custom_components/suro/frontend/suro-card.js",
+    file: "../custom_components/tapon/frontend/tapon-card.js",
     format: "es",
   },
   plugins: [resolve(), typescript(), terser({ format: { comments: false } })],

@@ -1,4 +1,4 @@
-"""Config flow: one Suro per Home Assistant; options hold the Gemini key."""
+"""Config flow: one Tapon per Home Assistant; options hold the Gemini key."""
 
 from __future__ import annotations
 
@@ -32,7 +32,7 @@ from .const import (
 )
 
 
-class SuroConfigFlow(ConfigFlow, domain=DOMAIN):
+class TaponConfigFlow(ConfigFlow, domain=DOMAIN):
     VERSION = 1
 
     async def async_step_user(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
@@ -47,10 +47,10 @@ class SuroConfigFlow(ConfigFlow, domain=DOMAIN):
     @staticmethod
     @callback
     def async_get_options_flow(config_entry: ConfigEntry) -> OptionsFlow:
-        return SuroOptionsFlow()
+        return TaponOptionsFlow()
 
 
-class SuroOptionsFlow(OptionsFlow):
+class TaponOptionsFlow(OptionsFlow):
     async def async_step_init(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
         errors: dict[str, str] = {}
         current = dict(self.config_entry.options)

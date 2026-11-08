@@ -189,7 +189,7 @@ export class AddDialog extends LitElement {
     this._reading = this._back ? "Leggo fronte e retro…" : "Leggo l'etichetta…";
     try {
       const res = await this.card.ws({
-        type: "suro/ai_recognize",
+        type: "tapon/ai_recognize",
         image: this._front,
         ...(this._back ? { back_image: this._back } : {}),
       });
@@ -222,7 +222,7 @@ export class AddDialog extends LitElement {
     }
     this._reading = "Completo i dati…";
     try {
-      const res = await this.card.ws({ type: "suro/ai_fill", wine: this._values });
+      const res = await this.card.ws({ type: "tapon/ai_fill", wine: this._values });
       this._merge(res.wine, false);
       this.card.toast("Dati completati");
     } catch {
@@ -236,7 +236,7 @@ export class AddDialog extends LitElement {
     if (!this.data.ai) {
       return html`<div class="ai"><div>
         <div class="ai-title">✨ Compilazione automatica</div>
-        <div class="note">Aggiungi una chiave Gemini (gratuita) in Impostazioni → Dispositivi e servizi → Suro → Configura per leggere le etichette con una foto.</div>
+        <div class="note">Aggiungi una chiave Gemini (gratuita) in Impostazioni → Dispositivi e servizi → Tapon → Configura per leggere le etichette con una foto.</div>
       </div></div>`;
     }
     return html`<div class="ai">
@@ -273,7 +273,7 @@ export class AddDialog extends LitElement {
     if (this.mode === "wish") {
       this._busy = true;
       try {
-        await this.card.ws({ type: "suro/wishlist_add", wine: this._values, where: this._where, wish_notes: this._wishNotes });
+        await this.card.ws({ type: "tapon/wishlist_add", wine: this._values, where: this._where, wish_notes: this._wishNotes });
         this.card.toast("Aggiunto alla lista dei desideri");
         this._close();
       } finally {
@@ -284,7 +284,7 @@ export class AddDialog extends LitElement {
     this._busy = true;
     try {
       const res = await this.card.ws({
-        type: "suro/add_bottles",
+        type: "tapon/add_bottles",
         wine: this._values,
         quantity: this._quantity,
         rack_id: this.rackId,

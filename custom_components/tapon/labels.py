@@ -1,7 +1,7 @@
 """Bottle labels: QR as SVG (for the card) and a printable 50 × 30 mm PNG.
 
 The PNG is 400 × 240 px (50 × 30 mm at 203 dpi, the usual small thermal
-label). It is written to ``<config>/suro_labels/<code>.png`` so printer
+label). It is written to ``<config>/tapon_labels/<code>.png`` so printer
 integrations that take an image path can use it.
 
 Blocking: call these from an executor.
@@ -14,7 +14,7 @@ from pathlib import Path
 
 from .logic import qr_payload_for
 
-LABEL_DIR = "suro_labels"
+LABEL_DIR = "tapon_labels"
 WIDTH, HEIGHT = 400, 240
 
 # Label formats: (width mm, height mm). "qr" is a small square with only the

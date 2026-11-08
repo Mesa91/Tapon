@@ -341,14 +341,14 @@ async def _async_call(session, api_key: str, model: str, prompt: str, images: li
             if resp.status != 200:
                 message = ((payload or {}).get("error") or {}).get("message", "")
                 if resp.status in (401, 403) or "API key" in message:
-                    raise AIError("La chiave Gemini non è valida. Controllala nelle opzioni di Suro.")
+                    raise AIError("La chiave Gemini non è valida. Controllala nelle opzioni di Tapon.")
                 if resp.status in (500, 502, 503, 504):
                     raise ModelBusy("Gemini è sovraccarico in questo momento: riprova tra qualche minuto.")
                 if resp.status == 429:
                     raise AIError("Limite gratuito di Gemini raggiunto per ora: riprova più tardi.")
                 if resp.status == 404:
                     raise ModelNotFound(f"Il modello \"{model}\" non è disponibile e non ne ho trovato un altro: "
-                                        "controlla il modello nelle opzioni di Suro.")
+                                        "controlla il modello nelle opzioni di Tapon.")
                 raise AIError(f"Gemini ha risposto con un errore ({resp.status}): {message[:200]}")
     except TimeoutError as err:
         raise ModelBusy("Gemini non ha risposto in tempo: riprova tra qualche minuto.") from err

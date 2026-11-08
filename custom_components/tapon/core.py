@@ -43,12 +43,12 @@ from .logic import (
     tag_id_for,
     wine_key,
 )
-from .store import SuroStore
+from .store import TaponStore
 
 _LOGGER = logging.getLogger(__name__)
 
 
-def get_store(hass: HomeAssistant) -> SuroStore | None:
+def get_store(hass: HomeAssistant) -> TaponStore | None:
     return hass.data.get(DOMAIN, {}).get("store")
 
 
@@ -72,7 +72,7 @@ async def async_changed(hass: HomeAssistant) -> None:
     hass.bus.async_fire(EVENT_UPDATED)
 
 
-def highlight_payload(store: SuroStore) -> dict[str, Any]:
+def highlight_payload(store: TaponStore) -> dict[str, Any]:
     """What is lit, with shelf positions: what LED automations need."""
     hl = store.highlight or {}
     by_id = {b["id"]: b for b in store.bottles}
@@ -146,14 +146,14 @@ async def async_take_scanned(hass: HomeAssistant, raw: str, source: str) -> dict
         +
         "Dopo averla bevuta puoi darle un voto dallo storico (🕓); se è stato un errore, "
         "da lì puoi anche rimetterla a posto.",
-        "Suro: bottiglia prelevata", f"{DOMAIN}_scan",
+        "Tapon: bottiglia prelevata", f"{DOMAIN}_scan",
     )
     return {"result": "taken", "bottle": bottle, "location": location, "remaining": remaining}
 
 
 def _unmatched(hass: HomeAssistant, raw: str, reason: str, message: str) -> dict[str, Any]:
     hass.bus.async_fire(EVENT_SCAN_UNMATCHED, {"code": raw, "reason": reason})
-    _notify(hass, message, "Suro: scansione", f"{DOMAIN}_scan")
+    _notify(hass, message, "Tapon: scansione", f"{DOMAIN}_scan")
     return {"result": reason}
 
 
@@ -184,12 +184,12 @@ def async_setup_tag_listener(hass: HomeAssistant):
 
 # ── Labels ────────────────────────────────────────────────────────────────────
 
-def label_format(store: SuroStore | None) -> str:
+def label_format(store: TaponStore | None) -> str:
     fmt = (store.settings.get(CONF_LABEL_FORMAT) if store else None) or labels.DEFAULT_FORMAT
     return fmt if fmt in labels.FORMATS else labels.DEFAULT_FORMAT
 
 
-def label_info(store: SuroStore, bottle: dict[str, Any]) -> dict[str, Any]:
+def label_info(store: TaponStore, bottle: dict[str, Any]) -> dict[str, Any]:
     location = location_text(bottle, store.racks)
     tlabel = type_label(bottle.get("type"))
     fmt = label_format(store)
@@ -233,7 +233,7 @@ async def async_request_label(hass: HomeAssistant, bottle: dict[str, Any], reaso
     if device:
         if not hass.services.has_service("niimbot", "print"):
             _notify(hass, "La stampante è impostata ma l'integrazione Niimbot non è attiva.",
-                    "Suro: stampa", f"{DOMAIN}_print")
+                    "Tapon: stampa", f"{DOMAIN}_print")
         else:
             try:
                 await hass.services.async_call(
@@ -245,7 +245,7 @@ async def async_request_label(hass: HomeAssistant, bottle: dict[str, Any], reaso
             except Exception as err:
                 _notify(hass, f"Non sono riuscito a stampare l'etichetta di **{wine_title(bottle)}**: {err}. "
                         "Controlla che la stampante sia accesa e raggiungibile.",
-                        "Suro: stampa", f"{DOMAIN}_print")
+                        "Tapon: stampa", f"{DOMAIN}_print")
     return info
 
 
@@ -293,7 +293,7 @@ async def async_check_alerts(hass: HomeAssistant, force: bool = False) -> dict[s
             lines += [f"- {wine_title(e)}: {e['bottles']} bott., finestra chiusa nel {e['drink_until']}"
                       for e in fresh[STATUS_PAST]]
         message = "\n".join(lines)
-        _notify(hass, message, "Suro: vini da bere", f"{DOMAIN}_alerts")
+        _notify(hass, message, "Tapon: vini da bere", f"{DOMAIN}_alerts")
         hass.bus.async_fire(EVENT_DRINK_ALERT, {
             "closing": fresh[STATUS_CLOSING], "past": fresh[STATUS_PAST], "message": message,
         })
@@ -319,7 +319,7 @@ async def async_check_reserved(hass: HomeAssistant, today: date | None = None) -
              for b in due]
     _notify(hass, "È arrivato il giorno per:\n" + "\n".join(lines)
             + "\n\nSe non la apri più, togli la riserva dalla scheda della bottiglia.",
-            "Suro: bottiglie riservate", f"{DOMAIN}_reserved")
+            "Tapon: bottiglie riservate", f"{DOMAIN}_reserved")
     for b in due:
         b["reserved_notified"] = True
         hass.bus.async_fire(EVENT_RESERVED_DUE, {
@@ -357,7 +357,7 @@ async def async_check_opened(hass: HomeAssistant) -> list[dict[str, Any]]:
     lines = [f"- **{wine_title(b)}**: aperta da {i['days']} {'giorno' if i['days'] == 1 else 'giorni'}"
              + (" — meglio finirla stasera" if i["state"] == "today" else " — probabilmente non è più al meglio")
              for b, i in due]
-    _notify(hass, "\n".join(lines), "Suro: bottiglie aperte", f"{DOMAIN}_opened")
+    _notify(hass, "\n".join(lines), "Tapon: bottiglie aperte", f"{DOMAIN}_opened")
     for b, i in due:
         b["opened_notified"] = True
         hass.bus.async_fire(EVENT_OPENED_REMINDER, {
@@ -455,7 +455,7 @@ def async_setup_climate_monitor(hass: HomeAssistant):
                 word = "bassa" if now_status == "low" else "alta"
                 message = (f"In cantina la {name} è troppo {word}: {current.state} {unit} "
                            f"(ideale {low:g}–{high:g} {unit}).")
-                _notify(hass, message, "Suro: clima della cantina", f"{DOMAIN}_climate_{name}")
+                _notify(hass, message, "Tapon: clima della cantina", f"{DOMAIN}_climate_{name}")
                 hass.bus.async_fire(EVENT_CLIMATE_ALERT, {
                     "measure": name, "status": now_status, "value": current.state, "unit": unit,
                     "min": low, "max": high, "message": message,

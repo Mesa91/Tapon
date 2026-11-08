@@ -1,14 +1,14 @@
-"""Constants for Suro."""
+"""Constants for Tapon."""
 
-DOMAIN = "suro"
-NAME = "Suro"
+DOMAIN = "tapon"
+NAME = "Tapon"
 
 STORAGE_KEY = DOMAIN
 STORAGE_VERSION = 1
 
 # Card: served from the integration folder and loaded on every dashboard.
-CARD_URL = "/suro/suro-card.js"
-CARD_VERSION = "20261105a"  # bump with every frontend build to bust the cache
+CARD_URL = "/tapon/tapon-card.js"
+CARD_VERSION = "20261108a"  # bump with every frontend build to bust the cache
 
 # Wine types: key -> (Italian label, colour used on the rack).
 WINE_TYPES: dict[str, tuple[str, str]] = {
@@ -70,11 +70,11 @@ EVENT_CLIMATE_ALERT = f"{DOMAIN}_climate_alert"
 # Options: label printer (Niimbot via the hass-niimbot integration).
 CONF_PRINTER_DEVICE = "printer_device"
 
-EVENT_RESERVED_DUE = "suro_reserved_due"
-EVENT_INVENTORY_SCAN = "suro_inventory_scan"
+EVENT_RESERVED_DUE = "tapon_reserved_due"
+EVENT_INVENTORY_SCAN = "tapon_inventory_scan"
 REBUY_MIN_RATING = 4
-EVENT_HIGHLIGHT = "suro_highlight"
+EVENT_HIGHLIGHT = "tapon_highlight"
 # Days an opened bottle keeps well (with a stopper, in the fridge or cool).
 OPEN_DAYS = {"sparkling": 2, "white": 3, "rose": 3, "red": 5, "dessert": 14}
 OPENED_ALERT_HOUR = 17
-EVENT_OPENED_REMINDER = "suro_opened_reminder"
+EVENT_OPENED_REMINDER = "tapon_opened_reminder"

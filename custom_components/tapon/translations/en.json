@@ -2,13 +2,13 @@
   "config": {
     "step": {
       "user": {
-        "title": "Suro",
-        "description": "Adds the wine cellar. Then add the `custom:suro-card` card to a dashboard."
+        "title": "Tapon",
+        "description": "Adds the wine cellar. Then add the `custom:tapon-card` card to a dashboard."
       }
     },
     "abort": {
-      "already_configured": "Suro is already configured.",
-      "single_instance_allowed": "Suro is already configured."
+      "already_configured": "Tapon is already configured.",
+      "single_instance_allowed": "Tapon is already configured."
     }
   },
   "entity": {
@@ -40,7 +40,7 @@
     },
     "print_label": {
       "name": "Print label",
-      "description": "Prepares a bottle label and fires suro_label_requested for the printer.",
+      "description": "Prepares a bottle label and fires tapon_label_requested for the printer.",
       "fields": {
         "bottle_id": {
           "name": "Bottle ID",
@@ -66,7 +66,7 @@
   "options": {
     "step": {
       "init": {
-        "title": "Suro options",
+        "title": "Tapon options",
         "description": "Gemini key for labels, cellar sensors with the limits that trigger an alert, and the label printer.",
         "data": {
           "gemini_api_key": "Gemini API key",

@@ -52,7 +52,7 @@ export class BottleDialog extends LitElement {
   private async _loadLabel() {
     const id = this.bottle.id;
     try {
-      const label = await this.card.hass.callWS({ type: "suro/get_label", bottle_id: id });
+      const label = await this.card.hass.callWS({ type: "tapon/get_label", bottle_id: id });
       if (this.bottle.id === id) this._label = label;
     } catch {
       /* the label is a nicety; the dialog works without it */
@@ -71,7 +71,7 @@ export class BottleDialog extends LitElement {
   private async _remove(reason: string, rated = false) {
     this._busy = true;
     try {
-      const msg: Record<string, unknown> = { type: "suro/remove_bottle", bottle_id: this.bottle.id, reason };
+      const msg: Record<string, unknown> = { type: "tapon/remove_bottle", bottle_id: this.bottle.id, reason };
       if (rated) {
         if (this._stars) msg.rating = this._stars;
         if (this._tasting.trim()) msg.tasting_notes = this._tasting.trim();
@@ -95,7 +95,7 @@ export class BottleDialog extends LitElement {
     this._busy = true;
     try {
       await this.card.ws({
-        type: "suro/reserve_bottle", bottle_id: this.bottle.id,
+        type: "tapon/reserve_bottle", bottle_id: this.bottle.id,
         reserved_for: clear ? "" : this._resFor.trim() || "Riservata", reserved_until: clear ? null : this._resUntil || null,
       });
       this.card.toast(clear ? "Riserva tolta" : "Bottiglia riservata: non verrà proposta negli abbinamenti");
@@ -109,7 +109,7 @@ export class BottleDialog extends LitElement {
     this._busy = true;
     try {
       const res = await this.card.ws({
-        type: "suro/update_bottle",
+        type: "tapon/update_bottle",
         bottle_id: this.bottle.id,
         changes: this._values,
         same_wine: this._sameWine,
@@ -124,10 +124,10 @@ export class BottleDialog extends LitElement {
   }
 
   private async _printOnPrinter() {
-    const res = await this.card.ws({ type: "suro/request_label", bottle_id: this.bottle.id });
+    const res = await this.card.ws({ type: "tapon/request_label", bottle_id: this.bottle.id });
     this.card.toast(res.printed ? "Etichetta stampata" : this.data.printer
       ? "Stampa non riuscita: guarda le notifiche di Home Assistant"
-      : "Richiesta inviata. Per stampare da solo, scegli la stampante nelle opzioni di Suro.");
+      : "Richiesta inviata. Per stampare da solo, scegli la stampante nelle opzioni di Tapon.");
   }
 
   private _printInBrowser() {
@@ -299,7 +299,7 @@ export class BottleDialog extends LitElement {
     this._busy = true;
     try {
       const b = this.bottle;
-      const res = await this.card.ws({ type: "suro/ai_fill", wine: {
+      const res = await this.card.ws({ type: "tapon/ai_fill", wine: {
         name: b.name, producer: b.producer, vintage: b.vintage, type: b.type, region: b.region, grape: b.grape } });
       const w = res.wine || {};
       const changes: Record<string, any> = {};
@@ -313,7 +313,7 @@ export class BottleDialog extends LitElement {
         this.card.toast(fail);
         return;
       }
-      await this.card.ws({ type: "suro/update_bottle", bottle_id: b.id, changes, same_wine: true });
+      await this.card.ws({ type: "tapon/update_bottle", bottle_id: b.id, changes, same_wine: true });
       this.card.toast(ok(changes));
     } catch {
       /* shown by the card */
@@ -335,7 +335,7 @@ export class BottleDialog extends LitElement {
   private async _open() {
     this._busy = true;
     try {
-      const res = await this.card.ws({ type: "suro/open_bottle", bottle_id: this.bottle.id });
+      const res = await this.card.ws({ type: "tapon/open_bottle", bottle_id: this.bottle.id });
       this.card.toast(`Segnata come aperta: ti ricordo di finirla entro ${res.limit} giorni`);
       this._close();
     } finally {

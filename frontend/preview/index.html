@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Suro – anteprima</title>
+  <title>Tapon – anteprima</title>
   <style>
     body { margin: 0; padding: 16px; font-family: Roboto, system-ui, sans-serif; background: #111;
       --primary-text-color: #e8e8e8; --secondary-text-color: #9a9a9a; --card-background-color: #1c1c1c;
@@ -12,7 +12,7 @@
   </style>
 </head>
 <body>
-  <suro-card></suro-card>
+  <tapon-card></tapon-card>
   <script>
     // Minimal in-memory imitation of the integration, for trying the card
     // without Home Assistant: `python3 -m http.server` in this folder's parent.
@@ -54,17 +54,17 @@
     const free = (rack) => { const t = new Set(db.bottles.filter((b) => b.rack_id === rack.id).map((b) => b.row + ":" + b.col));
       const out = []; rack.shelves.forEach((n, r) => { for (let c = 0; c < n; c++) if (!t.has(r + ":" + c)) out.push([r, c]); }); return out; };
     const handlers = {
-      "suro/add_bottles": (m) => { const rack = db.racks.find((r) => r.id === m.rack_id) || db.racks[0]; let slots = rack ? free(rack) : [];
+      "tapon/add_bottles": (m) => { const rack = db.racks.find((r) => r.id === m.rack_id) || db.racks[0]; let slots = rack ? free(rack) : [];
         if (m.row != null) slots = slots.filter(([r, c]) => r > m.row || (r === m.row && c >= m.col)).concat(slots.filter(([r, c]) => r < m.row || (r === m.row && c < m.col)));
         const added = []; for (let i = 0; i < (m.quantity || 1); i++) { const s = slots[i];
           const b = { ...m.wine, vintage: m.wine.vintage ? Number(m.wine.vintage) : null, drink_from: m.wine.drink_from ? Number(m.wine.drink_from) : null,
             drink_until: m.wine.drink_until ? Number(m.wine.drink_until) : null, id: id("b"), code: "new" + n,
             rack_id: s ? rack.id : null, row: s ? s[0] : null, col: s ? s[1] : null, added_at: new Date().toISOString() };
           db.bottles.push(b); added.push(b); } if (m.wish_id) db.wishlist = db.wishlist.filter((w) => w.id !== m.wish_id); changed(); return { bottles: added }; },
-      "suro/remove_bottle": (m) => { const i = db.bottles.findIndex((b) => b.id === m.bottle_id); const [b] = db.bottles.splice(i, 1);
+      "tapon/remove_bottle": (m) => { const i = db.bottles.findIndex((b) => b.id === m.bottle_id); const [b] = db.bottles.splice(i, 1);
         if (db.highlight) { db.highlight.groups = db.highlight.groups.filter((g) => !g.bottle_ids.includes(b.id)); if (!db.highlight.groups.length) db.highlight = null; }
         db.history.push({ ...b, history_id: id("h"), removed_at: new Date().toISOString(), reason: m.reason, rating: m.rating, tasting_notes: m.tasting_notes }); changed(); return {}; },
-      "suro/check_wine": (m) => { const w = m.wine || { name: "Barolo Cannubi", producer: "Brezza", vintage: 2016, type: "red", region: "Barolo DOCG" };
+      "tapon/check_wine": (m) => { const w = m.wine || { name: "Barolo Cannubi", producer: "Brezza", vintage: 2016, type: "red", region: "Barolo DOCG" };
         const q = (w.name || "").toLowerCase(); const hit = (b) => (b.name || "").toLowerCase().includes(q) || q.includes((b.name || "").toLowerCase());
         const grp = {}; db.bottles.filter(hit).forEach((b) => { const k = b.name + b.vintage; (grp[k] = grp[k] || { match: !w.vintage || w.vintage === b.vintage ? "same" : "vintage", name: b.name, producer: b.producer, vintage: b.vintage, type: b.type, bottles: 0, bottle_ids: [], locations: [], reserved: 0 });
           grp[k].bottles++; grp[k].bottle_ids.push(b.id); grp[k].locations.push("Scaffale · mensola " + (b.row + 1) + ", posto " + (b.col + 1)); if (b.reserved_for) grp[k].reserved++; });
@@ -72,39 +72,39 @@
         return new Promise((ok) => setTimeout(() => ok({ wine: { type: "red", ...w }, cellar: Object.values(grp),
           drunk: dr.length ? [{ match: "same", name: dr[0].name, producer: dr[0].producer, vintage: dr[0].vintage, times: dr.length, rating: 5, notes: dr[0].tasting_notes || "", last: dr[0].removed_at }] : [],
           wished: db.wishlist.filter(hit).map((x) => ({ match: "same", name: x.name, vintage: x.vintage, wish_id: x.id, source: x.source })) }), 500)); },
-      "suro/open_bottle": (m) => { const b = db.bottles.find((x) => x.id === m.bottle_id); Object.assign(b, { rack_id: null, row: null, col: null, opened_at: new Date(Date.now() - 3 * 864e5).toISOString(), opened_days: 3, opened_state: "today" }); changed(); return { bottle: b, limit: 3 }; },
-      "suro/highlight": (m) => { db.highlight = { source: m.source, query: m.query, groups: m.groups }; changed(); return { highlight: db.highlight }; },
-      "suro/highlight_clear": () => { db.highlight = null; changed(); return {}; },
-      "suro/reserve_bottle": (m) => { const b = db.bottles.find((x) => x.id === m.bottle_id); delete b.reserved_for; delete b.reserved_until;
+      "tapon/open_bottle": (m) => { const b = db.bottles.find((x) => x.id === m.bottle_id); Object.assign(b, { rack_id: null, row: null, col: null, opened_at: new Date(Date.now() - 3 * 864e5).toISOString(), opened_days: 3, opened_state: "today" }); changed(); return { bottle: b, limit: 3 }; },
+      "tapon/highlight": (m) => { db.highlight = { source: m.source, query: m.query, groups: m.groups }; changed(); return { highlight: db.highlight }; },
+      "tapon/highlight_clear": () => { db.highlight = null; changed(); return {}; },
+      "tapon/reserve_bottle": (m) => { const b = db.bottles.find((x) => x.id === m.bottle_id); delete b.reserved_for; delete b.reserved_until;
         if (m.reserved_for) { b.reserved_for = m.reserved_for; if (m.reserved_until) b.reserved_until = m.reserved_until; } changed(); return { bottle: b }; },
-      "suro/wishlist_add": (m) => { const w = { ...m.wine, id: id("w"), added_at: new Date().toISOString(), source: "manual", where: m.where, wish_notes: m.wish_notes }; db.wishlist.push(w); changed(); return { wish: w }; },
-      "suro/wishlist_remove": (m) => { db.wishlist = db.wishlist.filter((w) => w.id !== m.wish_id); changed(); return {}; },
-      "suro/inventory_start": (m) => { db.inventory = { rack_id: m.rack_id || null, seen: [], found: [], unknown: 0, last: null }; changed(); return { inventory: invReport() }; },
-      "suro/inventory_stop": () => { const r = invReport(); db.inventory = null; changed(); return { inventory: r }; },
-      "suro/take_code": (m) => { const code = m.code.replace("suro-", ""); const b = db.bottles.find((x) => x.code === code);
+      "tapon/wishlist_add": (m) => { const w = { ...m.wine, id: id("w"), added_at: new Date().toISOString(), source: "manual", where: m.where, wish_notes: m.wish_notes }; db.wishlist.push(w); changed(); return { wish: w }; },
+      "tapon/wishlist_remove": (m) => { db.wishlist = db.wishlist.filter((w) => w.id !== m.wish_id); changed(); return {}; },
+      "tapon/inventory_start": (m) => { db.inventory = { rack_id: m.rack_id || null, seen: [], found: [], unknown: 0, last: null }; changed(); return { inventory: invReport() }; },
+      "tapon/inventory_stop": () => { const r = invReport(); db.inventory = null; changed(); return { inventory: r }; },
+      "tapon/take_code": (m) => { const code = m.code.replace("tapon-", ""); const b = db.bottles.find((x) => x.code === code);
         if (db.inventory && b) { if (!db.inventory.seen.includes(code)) db.inventory.seen.push(code); db.inventory.last = { code, name: b.name, vintage: b.vintage, result: "ok" }; changed(); }
         return { result: "inventory_ok" }; },
-      "suro/remove_bottles": (m) => { m.bottle_ids.forEach((i) => handlers["suro/remove_bottle"]({ bottle_id: i, reason: m.reason })); return { removed: m.bottle_ids.length }; },
-      "suro/rate_history": (m) => { const h = db.history.find((x) => x.history_id === m.history_id); h.rating = m.rating || undefined; h.tasting_notes = m.tasting_notes || undefined; changed(); return { entry: h }; },
-      "suro/move_bottle": (m) => { const b = db.bottles.find((x) => x.id === m.bottle_id);
+      "tapon/remove_bottles": (m) => { m.bottle_ids.forEach((i) => handlers["tapon/remove_bottle"]({ bottle_id: i, reason: m.reason })); return { removed: m.bottle_ids.length }; },
+      "tapon/rate_history": (m) => { const h = db.history.find((x) => x.history_id === m.history_id); h.rating = m.rating || undefined; h.tasting_notes = m.tasting_notes || undefined; changed(); return { entry: h }; },
+      "tapon/move_bottle": (m) => { const b = db.bottles.find((x) => x.id === m.bottle_id);
         const o = db.bottles.find((x) => x.rack_id === m.rack_id && x.row === m.row && x.col === m.col);
         if (o) Object.assign(o, { rack_id: b.rack_id, row: b.row, col: b.col }); Object.assign(b, { rack_id: m.rack_id, row: m.row, col: m.col }); changed(); return {}; },
-      "suro/update_bottle": (m) => { const b = db.bottles.find((x) => x.id === m.bottle_id); Object.assign(b, m.changes); changed(); return { updated: 1 }; },
-      "suro/get_history": () => ({ history: [...db.history].reverse() }),
-      "suro/restore": (m) => { const i = db.history.findIndex((h) => h.history_id === m.history_id); const [h] = db.history.splice(i, 1);
+      "tapon/update_bottle": (m) => { const b = db.bottles.find((x) => x.id === m.bottle_id); Object.assign(b, m.changes); changed(); return { updated: 1 }; },
+      "tapon/get_history": () => ({ history: [...db.history].reverse() }),
+      "tapon/restore": (m) => { const i = db.history.findIndex((h) => h.history_id === m.history_id); const [h] = db.history.splice(i, 1);
         db.bottles.push(h); changed(); return { bottle: h }; },
-      "suro/save_rack": (m) => { let r = db.racks.find((x) => x.id === m.rack.id);
+      "tapon/save_rack": (m) => { let r = db.racks.find((x) => x.id === m.rack.id);
         if (!r) { r = { id: id("rack-"), order: db.racks.length }; db.racks.push(r); } const sh = m.rack.shelves || Array(m.rack.rows || 5).fill(m.rack.cols || 8);
         Object.assign(r, { name: m.rack.name, shelves: sh, rows: sh.length, cols: Math.max(...sh) }); changed(); return { rack: r, displaced: 0 }; },
-      "suro/delete_rack": (m) => { db.racks = db.racks.filter((r) => r.id !== m.rack_id);
+      "tapon/delete_rack": (m) => { db.racks = db.racks.filter((r) => r.id !== m.rack_id);
         db.bottles.forEach((b) => { if (b.rack_id === m.rack_id) Object.assign(b, { rack_id: null, row: null, col: null }); }); changed(); return { displaced: 0 }; },
-      "suro/update_settings": (m) => { if ("auto_labels" in m) db.settings.auto_labels = m.auto_labels; if ("alert_days" in m) db.settings.alert_days = m.alert_days; if ("label_format" in m) db.settings.label_format = m.label_format; changed(); return {}; },
-      "suro/get_label": () => ({ code: "k7m2xq9p", png_base64: (db.settings.label_format === "qr" ? window.QR_PNG : window.LABEL_PNG) || "", label_format: db.settings.label_format, width_mm: db.settings.label_format === "qr" ? 23 : 50, height_mm: db.settings.label_format === "qr" ? 23 : 30 }),
-      "suro/request_label": () => ({}),
-      "suro/ai_recognize": (m) => (window.AI_CALLS = (window.AI_CALLS || []).concat([{ back: !!m.back_image }]), { wine: { name: "Rosé di Morgante", producer: "Morgante", vintage: 2023, type: "rose",
+      "tapon/update_settings": (m) => { if ("auto_labels" in m) db.settings.auto_labels = m.auto_labels; if ("alert_days" in m) db.settings.alert_days = m.alert_days; if ("label_format" in m) db.settings.label_format = m.label_format; changed(); return {}; },
+      "tapon/get_label": () => ({ code: "k7m2xq9p", png_base64: (db.settings.label_format === "qr" ? window.QR_PNG : window.LABEL_PNG) || "", label_format: db.settings.label_format, width_mm: db.settings.label_format === "qr" ? 23 : 50, height_mm: db.settings.label_format === "qr" ? 23 : 30 }),
+      "tapon/request_label": () => ({}),
+      "tapon/ai_recognize": (m) => (window.AI_CALLS = (window.AI_CALLS || []).concat([{ back: !!m.back_image }]), { wine: { name: "Rosé di Morgante", producer: "Morgante", vintage: 2023, type: "rose",
         region: "Sicilia DOC", country: "Italia", grape: "Nero d'Avola", alcohol: "12,5%", drink_from: 2024, drink_until: 2026,
         description: "Rosato tenue e floreale, con note di fragolina e agrumi. Fresco e sapido.", food_pairings: "crudi di pesce, couscous, pizza bianca" } }),
-      "suro/pair": (m) => { const ws = []; const seen = {}; for (const b of db.bottles) { const k = b.name + "|" + b.vintage; if (!seen[k]) { seen[k] = { key: k, name: b.name, producer: b.producer || "", vintage: b.vintage, type: b.type, status: (alertOf(b) || "ready"), bottles: 0, bottle_ids: [], locations: ["Scaffale · mensola " + ((b.row ?? 0) + 1) + ", posto " + ((b.col ?? 0) + 1)] }; ws.push(seen[k]); } seen[k].bottles++; seen[k].bottle_ids.push(b.id); }
+      "tapon/pair": (m) => { const ws = []; const seen = {}; for (const b of db.bottles) { const k = b.name + "|" + b.vintage; if (!seen[k]) { seen[k] = { key: k, name: b.name, producer: b.producer || "", vintage: b.vintage, type: b.type, status: (alertOf(b) || "ready"), bottles: 0, bottle_ids: [], locations: ["Scaffale · mensola " + ((b.row ?? 0) + 1) + ", posto " + ((b.col ?? 0) + 1)] }; ws.push(seen[k]); } seen[k].bottles++; seen[k].bottle_ids.push(b.id); }
         ws.forEach((w) => { const p = past(db.bottles.find((b) => b.id === w.bottle_ids[0])); w.rating = p.past_rating || null; });
         const reds = ws.filter((w) => w.type === "red").slice(0, 2);
         if (m.courses) { const by = (t) => ws.find((w) => w.type === t) || null;
@@ -113,11 +113,11 @@
             courses: m.courses.map((c, i) => ({ course: c, wine: plan[i] ? { ...plan[i], reason: "" } : null, reason: plan[i] ? "Accompagna bene " + c.toLowerCase() + "." : "" })),
             one: { ...ws.find((w) => w.type === "sparkling"), reason: "Le bollicine reggono tutto il menu, dall'antipasto al dolce." } }), 600)); }
         return new Promise((ok) => setTimeout(() => ok({ source: "ai", advice: "Servilo a 18 °C dopo mezz'ora di decanter.", picks: reds.map((w, i) => ({ ...w, reason: i ? "Più leggero, regge comunque il sugo." : "Tannino e struttura reggono la lunga cottura del " + m.dish.toLowerCase() + "." })) }), 600)); },
-      "suro/ai_fill": (m) => ({ wine: { producer: "Brezza", region: "Barolo DOCG", country: "Italia", grape: "Nebbiolo", drink_from: 2024, drink_until: 2036, drink_peak: 2030, serve_temp: "10–12 °C", decant: "no", glass: "tulipano" } }),
+      "tapon/ai_fill": (m) => ({ wine: { producer: "Brezza", region: "Barolo DOCG", country: "Italia", grape: "Nebbiolo", drink_from: 2024, drink_until: 2036, drink_peak: 2030, serve_temp: "10–12 °C", decant: "no", glass: "tulipano" } }),
     };
-    customElements.whenDefined("suro-card").then(() => {
-    const card = document.querySelector("suro-card");
-    card.setConfig({ type: "custom:suro-card" });
+    customElements.whenDefined("tapon-card").then(() => {
+    const card = document.querySelector("tapon-card");
+    card.setConfig({ type: "custom:tapon-card" });
     card.hass = {
       states: { "sensor.cantina_temperatura": { state: "17.4" }, "sensor.cantina_umidita": { state: "68" } },
       callWS: async (m) => { const h = handlers[m.type]; if (!h) throw new Error("mock: " + m.type); return JSON.parse(JSON.stringify(await h(m))); },
@@ -125,6 +125,6 @@
     };
     });
   </script>
-  <script type="module" src="../../custom_components/suro/frontend/suro-card.js"></script>
+  <script type="module" src="../../custom_components/tapon/frontend/tapon-card.js"></script>
 </body>
 </html>

@@ -1,4 +1,4 @@
-"""Websocket commands used by the card (all ``suro/...``)."""
+"""Websocket commands used by the card (all ``tapon/...``)."""
 
 from __future__ import annotations
 
@@ -37,7 +37,7 @@ def async_register(hass: HomeAssistant) -> None:
 def _store(hass: HomeAssistant, connection, msg) -> Any:
     store = core.get_store(hass)
     if store is None:
-        connection.send_error(msg["id"], "not_ready", "Suro non è configurato")
+        connection.send_error(msg["id"], "not_ready", "Tapon non è configurato")
     return store
 
 
@@ -93,8 +93,8 @@ async def _ai_call(hass, connection, msg, prompt: str, images: list[str]) -> Non
 
     key, model = _gemini(hass)
     if not key:
-        connection.send_error(msg["id"], "no_ai", "Aggiungi la chiave Gemini nelle opzioni di Suro "
-                              "(Impostazioni → Dispositivi e servizi → Suro → Configura).")
+        connection.send_error(msg["id"], "no_ai", "Aggiungi la chiave Gemini nelle opzioni di Tapon "
+                              "(Impostazioni → Dispositivi e servizi → Tapon → Configura).")
         return
     try:
         wine = await ai.async_generate(async_get_clientsession(hass), key, model, prompt, images)
@@ -105,7 +105,7 @@ async def _ai_call(hass, connection, msg, prompt: str, images: list[str]) -> Non
 
 
 @websocket_api.websocket_command({
-    vol.Required("type"): "suro/ai_recognize",
+    vol.Required("type"): "tapon/ai_recognize",
     vol.Required("image"): str,
     vol.Optional("back_image"): str,
 })
@@ -117,7 +117,7 @@ async def ws_ai_recognize(hass, connection, msg) -> None:
 
 
 @websocket_api.websocket_command({
-    vol.Required("type"): "suro/ai_fill",
+    vol.Required("type"): "tapon/ai_fill",
     vol.Required("wine"): dict,
 })
 @websocket_api.async_response
@@ -130,7 +130,7 @@ async def ws_ai_fill(hass, connection, msg) -> None:
 
 
 @websocket_api.websocket_command({
-    vol.Required("type"): "suro/pair",
+    vol.Required("type"): "tapon/pair",
     vol.Optional("dish"): vol.All(str, vol.Length(max=300)),
     vol.Optional("courses"): vol.All([vol.All(str, vol.Length(max=200))], vol.Length(max=8)),
 })
@@ -206,12 +206,12 @@ async def ws_pair(hass, connection, msg) -> None:
     connection.send_result(msg["id"], {"source": "local", "advice": note, "picks": picks})
 
 
-@websocket_api.websocket_command({vol.Required("type"): "suro/subscribe"})
+@websocket_api.websocket_command({vol.Required("type"): "tapon/subscribe"})
 @callback
 def ws_subscribe(hass, connection, msg) -> None:
     """Push a fresh snapshot to the card whenever the data changes."""
     if core.get_store(hass) is None:
-        connection.send_error(msg["id"], "not_ready", "Suro non è configurato")
+        connection.send_error(msg["id"], "not_ready", "Tapon non è configurato")
         return
 
     @callback
@@ -223,7 +223,7 @@ def ws_subscribe(hass, connection, msg) -> None:
     connection.send_message(websocket_api.event_message(msg["id"], _snapshot(hass)))
 
 
-@websocket_api.websocket_command({vol.Required("type"): "suro/get_data"})
+@websocket_api.websocket_command({vol.Required("type"): "tapon/get_data"})
 @callback
 def ws_get_data(hass, connection, msg) -> None:
     if _store(hass, connection, msg):
@@ -231,7 +231,7 @@ def ws_get_data(hass, connection, msg) -> None:
 
 
 @websocket_api.websocket_command({
-    vol.Required("type"): "suro/add_bottles",
+    vol.Required("type"): "tapon/add_bottles",
     vol.Required("wine"): dict,
     vol.Optional("quantity", default=1): vol.All(int, vol.Range(min=1, max=100)),
     vol.Optional("rack_id"): vol.Any(str, None),
@@ -253,7 +253,7 @@ async def ws_add_bottles(hass, connection, msg) -> None:
 
 
 @websocket_api.websocket_command({
-    vol.Required("type"): "suro/update_bottle",
+    vol.Required("type"): "tapon/update_bottle",
     vol.Required("bottle_id"): str,
     vol.Required("changes"): dict,
     vol.Optional("same_wine", default=False): bool,
@@ -272,7 +272,7 @@ async def ws_update_bottle(hass, connection, msg) -> None:
 
 
 @websocket_api.websocket_command({
-    vol.Required("type"): "suro/move_bottle",
+    vol.Required("type"): "tapon/move_bottle",
     vol.Required("bottle_id"): str,
     vol.Required("rack_id"): vol.Any(str, None),
     vol.Optional("row"): vol.Any(int, None),
@@ -291,7 +291,7 @@ async def ws_move_bottle(hass, connection, msg) -> None:
 
 
 @websocket_api.websocket_command({
-    vol.Required("type"): "suro/remove_bottle",
+    vol.Required("type"): "tapon/remove_bottle",
     vol.Required("bottle_id"): str,
     vol.Optional("reason", default="drank"): vol.In(list(REMOVAL_REASONS)),
     vol.Optional("rating"): vol.Any(None, vol.All(int, vol.Range(min=1, max=5))),
@@ -312,7 +312,7 @@ async def ws_remove_bottle(hass, connection, msg) -> None:
 
 
 @websocket_api.websocket_command({
-    vol.Required("type"): "suro/remove_bottles",
+    vol.Required("type"): "tapon/remove_bottles",
     vol.Required("bottle_ids"): [str],
     vol.Optional("reason", default="missing"): vol.In(list(REMOVAL_REASONS)),
 })
@@ -328,7 +328,7 @@ async def ws_remove_bottles(hass, connection, msg) -> None:
 
 
 @websocket_api.websocket_command({
-    vol.Required("type"): "suro/reserve_bottle",
+    vol.Required("type"): "tapon/reserve_bottle",
     vol.Required("bottle_id"): str,
     vol.Optional("reserved_for"): vol.Any(None, vol.All(str, vol.Length(max=200))),
     vol.Optional("reserved_until"): vol.Any(None, str),
@@ -353,7 +353,7 @@ _WISH_EXTRA = {
 }
 
 
-@websocket_api.websocket_command({vol.Required("type"): "suro/wishlist_add", vol.Required("wine"): dict, **_WISH_EXTRA})
+@websocket_api.websocket_command({vol.Required("type"): "tapon/wishlist_add", vol.Required("wine"): dict, **_WISH_EXTRA})
 @websocket_api.async_response
 async def ws_wishlist_add(hass, connection, msg) -> None:
     store = _store(hass, connection, msg)
@@ -368,7 +368,7 @@ async def ws_wishlist_add(hass, connection, msg) -> None:
 
 
 @websocket_api.websocket_command({
-    vol.Required("type"): "suro/wishlist_update", vol.Required("wish_id"): str, vol.Required("changes"): dict,
+    vol.Required("type"): "tapon/wishlist_update", vol.Required("wish_id"): str, vol.Required("changes"): dict,
 })
 @websocket_api.async_response
 async def ws_wishlist_update(hass, connection, msg) -> None:
@@ -383,7 +383,7 @@ async def ws_wishlist_update(hass, connection, msg) -> None:
     connection.send_result(msg["id"], {"wish": wish})
 
 
-@websocket_api.websocket_command({vol.Required("type"): "suro/wishlist_remove", vol.Required("wish_id"): str})
+@websocket_api.websocket_command({vol.Required("type"): "tapon/wishlist_remove", vol.Required("wish_id"): str})
 @websocket_api.async_response
 async def ws_wishlist_remove(hass, connection, msg) -> None:
     store = _store(hass, connection, msg)
@@ -395,7 +395,7 @@ async def ws_wishlist_remove(hass, connection, msg) -> None:
 
 
 @websocket_api.websocket_command({
-    vol.Required("type"): "suro/inventory_start", vol.Optional("rack_id"): vol.Any(str, None),
+    vol.Required("type"): "tapon/inventory_start", vol.Optional("rack_id"): vol.Any(str, None),
 })
 @websocket_api.async_response
 async def ws_inventory_start(hass, connection, msg) -> None:
@@ -408,7 +408,7 @@ async def ws_inventory_start(hass, connection, msg) -> None:
     connection.send_result(msg["id"], {"inventory": store.inventory_report()})
 
 
-@websocket_api.websocket_command({vol.Required("type"): "suro/inventory_stop"})
+@websocket_api.websocket_command({vol.Required("type"): "tapon/inventory_stop"})
 @websocket_api.async_response
 async def ws_inventory_stop(hass, connection, msg) -> None:
     store = _store(hass, connection, msg)
@@ -420,7 +420,7 @@ async def ws_inventory_stop(hass, connection, msg) -> None:
     connection.send_result(msg["id"], {"inventory": report})
 
 
-@websocket_api.websocket_command({vol.Required("type"): "suro/get_history"})
+@websocket_api.websocket_command({vol.Required("type"): "tapon/get_history"})
 @callback
 def ws_get_history(hass, connection, msg) -> None:
     store = _store(hass, connection, msg)
@@ -429,7 +429,7 @@ def ws_get_history(hass, connection, msg) -> None:
 
 
 @websocket_api.websocket_command({
-    vol.Required("type"): "suro/rate_history",
+    vol.Required("type"): "tapon/rate_history",
     vol.Required("history_id"): str,
     vol.Optional("rating"): vol.Any(None, vol.All(int, vol.Range(min=1, max=5))),
     vol.Optional("tasting_notes"): vol.Any(None, vol.All(str, vol.Length(max=1000))),
@@ -450,7 +450,7 @@ async def ws_rate_history(hass, connection, msg) -> None:
 
 
 @websocket_api.websocket_command({
-    vol.Required("type"): "suro/restore",
+    vol.Required("type"): "tapon/restore",
     vol.Required("history_id"): str,
 })
 @websocket_api.async_response
@@ -467,7 +467,7 @@ async def ws_restore(hass, connection, msg) -> None:
 
 
 @websocket_api.websocket_command({
-    vol.Required("type"): "suro/save_rack",
+    vol.Required("type"): "tapon/save_rack",
     vol.Required("rack"): dict,
 })
 @websocket_api.async_response
@@ -481,7 +481,7 @@ async def ws_save_rack(hass, connection, msg) -> None:
 
 
 @websocket_api.websocket_command({
-    vol.Required("type"): "suro/delete_rack",
+    vol.Required("type"): "tapon/delete_rack",
     vol.Required("rack_id"): str,
 })
 @websocket_api.async_response
@@ -495,7 +495,7 @@ async def ws_delete_rack(hass, connection, msg) -> None:
 
 
 @websocket_api.websocket_command({
-    vol.Required("type"): "suro/get_label",
+    vol.Required("type"): "tapon/get_label",
     vol.Required("bottle_id"): str,
 })
 @websocket_api.async_response
@@ -513,7 +513,7 @@ async def ws_get_label(hass, connection, msg) -> None:
 
 
 @websocket_api.websocket_command({
-    vol.Required("type"): "suro/request_label",
+    vol.Required("type"): "tapon/request_label",
     vol.Required("bottle_id"): str,
 })
 @websocket_api.async_response
@@ -530,7 +530,7 @@ async def ws_request_label(hass, connection, msg) -> None:
 
 
 @websocket_api.websocket_command({
-    vol.Required("type"): "suro/take_code",
+    vol.Required("type"): "tapon/take_code",
     vol.Required("code"): str,
 })
 @websocket_api.async_response
@@ -540,7 +540,7 @@ async def ws_take_code(hass, connection, msg) -> None:
 
 
 @websocket_api.websocket_command({
-    vol.Required("type"): "suro/update_settings",
+    vol.Required("type"): "tapon/update_settings",
     vol.Optional(CONF_AUTO_LABELS): bool,
     vol.Optional(CONF_ALERT_DAYS): vol.All(int, vol.Range(min=0, max=730)),
     vol.Optional("label_format"): vol.In(list(labels.FORMATS)),  # "qr", "qr30", "full"
@@ -557,7 +557,7 @@ async def ws_update_settings(hass, connection, msg) -> None:
     connection.send_result(msg["id"])
 
 
-@websocket_api.websocket_command({vol.Required("type"): "suro/get_alerts"})
+@websocket_api.websocket_command({vol.Required("type"): "tapon/get_alerts"})
 @callback
 def ws_get_alerts(hass, connection, msg) -> None:
     if _store(hass, connection, msg):
@@ -565,7 +565,7 @@ def ws_get_alerts(hass, connection, msg) -> None:
 
 
 @websocket_api.websocket_command({
-    vol.Required("type"): "suro/highlight",
+    vol.Required("type"): "tapon/highlight",
     vol.Required("groups"): [{
         vol.Optional("label"): str, vol.Optional("color"): str, vol.Required("bottle_ids"): [str],
     }],
@@ -583,7 +583,7 @@ async def ws_highlight(hass, connection, msg) -> None:
     connection.send_result(msg["id"], {"highlight": hl})
 
 
-@websocket_api.websocket_command({vol.Required("type"): "suro/highlight_clear"})
+@websocket_api.websocket_command({vol.Required("type"): "tapon/highlight_clear"})
 @websocket_api.async_response
 async def ws_highlight_clear(hass, connection, msg) -> None:
     store = _store(hass, connection, msg)
@@ -595,7 +595,7 @@ async def ws_highlight_clear(hass, connection, msg) -> None:
 
 
 @websocket_api.websocket_command({
-    vol.Required("type"): "suro/check_wine",
+    vol.Required("type"): "tapon/check_wine",
     vol.Optional("image"): str,
     vol.Optional("back_image"): str,
     vol.Optional("wine"): dict,
@@ -615,7 +615,7 @@ async def ws_check_wine(hass, connection, msg) -> None:
         key, model = _gemini(hass)
         if not key:
             connection.send_error(msg["id"], "no_ai", "Per leggere l'etichetta serve la chiave Gemini nelle opzioni "
-                                  "di Suro; intanto puoi scrivere il nome.")
+                                  "di Tapon; intanto puoi scrivere il nome.")
             return
         images = [msg["image"]] + ([msg["back_image"]] if msg.get("back_image") else [])
         try:
@@ -635,7 +635,7 @@ async def ws_check_wine(hass, connection, msg) -> None:
     connection.send_result(msg["id"], {"wine": wine, **result})
 
 
-@websocket_api.websocket_command({vol.Required("type"): "suro/open_bottle", vol.Required("bottle_id"): str})
+@websocket_api.websocket_command({vol.Required("type"): "tapon/open_bottle", vol.Required("bottle_id"): str})
 @websocket_api.async_response
 async def ws_open_bottle(hass, connection, msg) -> None:
     """Opened but not finished (stopper, Coravin): off the shelf, reminder later."""

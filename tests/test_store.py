@@ -1,12 +1,12 @@
 import asyncio
 
 from conftest import FakeStore
-from tb.store import SuroStore
+from tb.store import TaponStore
 
 
 def load(disk, old=None):
     FakeStore.disk, FakeStore.old, FakeStore.saves = disk, old, 0
-    st = SuroStore(None)
+    st = TaponStore(None)
     asyncio.run(st.async_load())
     return st
 
@@ -172,6 +172,6 @@ def test_first_start_imports_the_old_taponbon_data():
     st = load(None, old)
     assert st.imported and st.get_by_code("k7m2xq9p")["name"] == "Barolo"
     assert st.settings == {"label_format": "50x30"} and st.wishlist == []
-    # once Suro has its own data, the old file is ignored
+    # once Tapon has its own data, the old file is ignored
     st = load({"racks": [], "bottles": [], "history": [], "settings": {}}, old)
     assert not st.imported and st.bottles == []

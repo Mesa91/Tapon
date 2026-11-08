@@ -1,14 +1,14 @@
 {
-  "domain": "suro",
-  "name": "Suro",
+  "domain": "tapon",
+  "name": "Tapon",
   "codeowners": ["@Mesa91"],
   "config_flow": true,
   "dependencies": ["frontend", "http", "lovelace", "persistent_notification", "websocket_api"],
-  "documentation": "https://github.com/Mesa91/Suro",
+  "documentation": "https://github.com/Mesa91/Tapon",
   "integration_type": "service",
   "iot_class": "local_push",
-  "issue_tracker": "https://github.com/Mesa91/Suro/issues",
+  "issue_tracker": "https://github.com/Mesa91/Tapon/issues",
   "requirements": ["segno==1.6.6"],
   "single_config_entry": true,
-  "version": "2.0.0"
+  "version": "3.0.0"
 }

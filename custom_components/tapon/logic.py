@@ -5,13 +5,13 @@ Nothing here imports Home Assistant, so it is tested on its own.
 Bottle codes
 ------------
 Every bottle has a short, stable ``code``. Its QR encodes the Home Assistant
-tag URL ``https://www.home-assistant.io/tag/suro-<code>``: the companion
+tag URL ``https://www.home-assistant.io/tag/tapon-<code>``: the companion
 app turns a scan into the ``tag_scanned`` event with ``tag_id ==
-"suro-<code>"``. A fixed reader may send the bare id or the whole URL.
+"tapon-<code>"``. A fixed reader may send the bare id or the whole URL.
 
-A tag can also name a rack slot, ``suro-slot-<rack_id>/<row>/<col>``
+A tag can also name a rack slot, ``tapon-slot-<rack_id>/<row>/<col>``
 (an NFC sticker on the shelf): scanning it takes out the bottle in that slot.
-Tags written under the old name (``taponbon-…``) are still accepted.
+Tags written under the old names (``taponbon-…``, ``suro-…``) are still accepted.
 
 Drinking window
 ---------------
@@ -28,11 +28,10 @@ from datetime import date, datetime
 from typing import Any, Iterable
 
 TAG_URL_PREFIX = "https://www.home-assistant.io/tag/"
-TAG_PREFIX = "suro-"
-SLOT_PREFIX = "suro-slot-"
-# Labels printed when the integration was still called TaponBon.
-LEGACY_TAG_PREFIX = "taponbon-"
-LEGACY_SLOT_PREFIX = "taponbon-slot-"
+TAG_PREFIX = "tapon-"
+SLOT_PREFIX = "tapon-slot-"
+# Labels printed under the integration's earlier names (TaponBon, Suro).
+LEGACY_NAMES = ("taponbon", "suro")
 
 # No 0/O, 1/l/I: the code is printed under the QR and may be typed by hand.
 CODE_ALPHABET = "23456789abcdefghjkmnpqrstuvwxyz"
@@ -85,7 +84,8 @@ def parse_scanned(raw: str | None) -> Scanned | None:
         text = text.split("/tag/", 1)[1]
     text = text.split("?", 1)[0].split("#", 1)[0].strip().strip("/")
     lowered = text.lower()
-    for legacy, current in ((LEGACY_SLOT_PREFIX, SLOT_PREFIX), (LEGACY_TAG_PREFIX, TAG_PREFIX)):
+    legacy_prefixes = [(f"{n}-slot-", SLOT_PREFIX) for n in LEGACY_NAMES] + [(f"{n}-", TAG_PREFIX) for n in LEGACY_NAMES]
+    for legacy, current in legacy_prefixes:
         if lowered.startswith(legacy):
             text = current + text[len(legacy):]
             lowered = text.lower()

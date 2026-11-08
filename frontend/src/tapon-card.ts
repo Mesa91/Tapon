@@ -24,10 +24,10 @@ type Dialog =
   | { kind: "pair" }
   | null;
 
-@customElement("suro-card")
-export class SuroCard extends LitElement {
+@customElement("tapon-card")
+export class TaponCard extends LitElement {
   @property({ attribute: false }) hass: any;
-  @state() private _config: CardConfig = { type: "custom:suro-card" };
+  @state() private _config: CardConfig = { type: "custom:tapon-card" };
   @state() private _data: Snapshot | null = null;
   @state() private _error = "";
   @state() private _typeFilter = "";
@@ -44,7 +44,7 @@ export class SuroCard extends LitElement {
   }
 
   static getStubConfig() {
-    return { type: "custom:suro-card" };
+    return { type: "custom:tapon-card" };
   }
 
   getCardSize() {
@@ -79,12 +79,12 @@ export class SuroCard extends LitElement {
           this._data = data;
           this._error = "";
         },
-        { type: "suro/subscribe" },
+        { type: "tapon/subscribe" },
       );
     } catch (err: any) {
       this._error =
         err?.code === "unknown_command"
-          ? "L'integrazione Suro non è installata: aggiungila da Impostazioni → Dispositivi e servizi."
+          ? "L'integrazione Tapon non è installata: aggiungila da Impostazioni → Dispositivi e servizi."
           : `Impossibile caricare la cantina: ${err?.message || err}`;
     } finally {
       this._subscribing = false;
@@ -111,14 +111,14 @@ export class SuroCard extends LitElement {
   private _onCell(rack: Rack, row: number, col: number, bottle?: Bottle) {
     if (this._data?.inventory) {
       // During an inventory check a tap means "this one is here", like a scan.
-      if (bottle) this.ws({ type: "suro/take_code", code: `suro-${bottle.code}` });
+      if (bottle) this.ws({ type: "tapon/take_code", code: `tapon-${bottle.code}` });
       return;
     }
     if (this._moving) {
       const moving = this._moving;
       this._moving = null;
       if (bottle?.id === moving.id) return;
-      this.ws({ type: "suro/move_bottle", bottle_id: moving.id, rack_id: rack.id, row, col }).then(() =>
+      this.ws({ type: "tapon/move_bottle", bottle_id: moving.id, rack_id: rack.id, row, col }).then(() =>
         this.toast(bottle ? "Bottiglie scambiate di posto" : "Bottiglia spostata"),
       );
       return;
@@ -164,7 +164,7 @@ export class SuroCard extends LitElement {
         <div class="title">
           <span class="logo">🍷</span>
           <div>
-            <div class="name">${this._config.title || "Suro"}</div>
+            <div class="name">${this._config.title || "Tapon"}</div>
             <div class="sub">${total} bottiglie · ${capacity - d.racks.reduce((s, r) => s + this._inRack(d, r).length, 0)} posti liberi${this._renderValue(d)}</div>
           </div>
         </div>
@@ -253,7 +253,7 @@ export class SuroCard extends LitElement {
     const label = [this._typeFilter ? d.types[this._typeFilter]?.label : "", this._query.trim()].filter(Boolean).join(" · ");
     return html`<button class="btn small light-btn" title="Evidenzia sullo scaffale finché non ne prendi una"
       @click=${async () => {
-        await this.ws({ type: "suro/highlight", source: "search", query: label,
+        await this.ws({ type: "tapon/highlight", source: "search", query: label,
           groups: [{ label, color: SEARCH_COLOR, bottle_ids: found.map((b) => b.id) }] });
         this._query = "";
         this._typeFilter = "";
@@ -269,7 +269,7 @@ export class SuroCard extends LitElement {
           <span class="muted">${g.bottle_ids.length}</span></span>`)}
       </div>
       <span class="hint">restano accese finché non ne prendi una</span>
-      <button class="btn small" @click=${() => this.ws({ type: "suro/highlight_clear" })}>Spegni</button>
+      <button class="btn small" @click=${() => this.ws({ type: "tapon/highlight_clear" })}>Spegni</button>
     </div>`;
   }
 
@@ -287,9 +287,9 @@ export class SuroCard extends LitElement {
       </div>
       <div class="inv-progress"><span style="width:${inv.total ? Math.round((inv.seen / inv.total) * 100) : 0}%"></span></div>
       <div class="inv-actions">
-        <button class="btn small" @click=${() => this.ws({ type: "suro/inventory_stop" }).then(() => this.toast("Inventario annullato"))}>Annulla</button>
+        <button class="btn small" @click=${() => this.ws({ type: "tapon/inventory_stop" }).then(() => this.toast("Inventario annullato"))}>Annulla</button>
         <button class="btn small primary" @click=${async () => {
-          const res = await this.ws({ type: "suro/inventory_stop" });
+          const res = await this.ws({ type: "tapon/inventory_stop" });
           this._dialog = { kind: "inventory", report: res.inventory };
         }}>Fine: vedi risultato</button>
       </div>
@@ -833,8 +833,8 @@ export class SuroCard extends LitElement {
 
 (window as any).customCards = (window as any).customCards || [];
 (window as any).customCards.push({
-  type: "suro-card",
-  name: "Suro",
+  type: "tapon-card",
+  name: "Tapon",
   description: "La tua cantina: scaffali, bottiglie, QR e finestre di beva",
   preview: false,
 });

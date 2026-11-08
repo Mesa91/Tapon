@@ -61,7 +61,7 @@ export class PairDialog extends LitElement {
     this._busy = true;
     this._result = null;
     try {
-      this._result = await this.card.ws({ type: "suro/pair", dish });
+      this._result = await this.card.ws({ type: "tapon/pair", dish });
       this._asked = dish;
     } catch {
       /* toast already shown */
@@ -76,7 +76,7 @@ export class PairDialog extends LitElement {
     this._busy = true;
     this._result = null;
     try {
-      this._result = await this.card.ws({ type: "suro/pair", courses });
+      this._result = await this.card.ws({ type: "tapon/pair", courses });
       this._asked = courses.join(" · ");
     } catch {
       /* toast already shown */
@@ -93,7 +93,7 @@ export class PairDialog extends LitElement {
 
   private async _light(groups: { label: string; color: string; bottle_ids: string[] }[], source: "pair" | "menu") {
     if (!groups.length) return;
-    await this.card.ws({ type: "suro/highlight", source, query: this._asked, groups });
+    await this.card.ws({ type: "tapon/highlight", source, query: this._asked, groups });
     this.card.toast("Illuminate sullo scaffale: si spengono quando ne prendi una");
     this._close();
   }

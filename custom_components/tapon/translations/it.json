@@ -2,13 +2,13 @@
   "config": {
     "step": {
       "user": {
-        "title": "Suro",
-        "description": "Aggiunge la cantina dei vini. Dopo l'installazione aggiungi in una dashboard la scheda `custom:suro-card`."
+        "title": "Tapon",
+        "description": "Aggiunge la cantina dei vini. Dopo l'installazione aggiungi in una dashboard la scheda `custom:tapon-card`."
       }
     },
     "abort": {
-      "already_configured": "Suro è già configurato.",
-      "single_instance_allowed": "Suro è già configurato."
+      "already_configured": "Tapon è già configurato.",
+      "single_instance_allowed": "Tapon è già configurato."
     }
   },
   "entity": {
@@ -34,13 +34,13 @@
       "fields": {
         "code": {
           "name": "Codice",
-          "description": "Il codice letto: suro-… oppure l'intero indirizzo del QR."
+          "description": "Il codice letto: tapon-… oppure l'intero indirizzo del QR."
         }
       }
     },
     "print_label": {
       "name": "Stampa etichetta",
-      "description": "Prepara l'etichetta di una bottiglia e lancia l'evento suro_label_requested per la stampante.",
+      "description": "Prepara l'etichetta di una bottiglia e lancia l'evento tapon_label_requested per la stampante.",
       "fields": {
         "bottle_id": {
           "name": "ID bottiglia",
@@ -66,7 +66,7 @@
   "options": {
     "step": {
       "init": {
-        "title": "Opzioni di Suro",
+        "title": "Opzioni di Tapon",
         "description": "Chiave Gemini per leggere le etichette (gratis su aistudio.google.com), sensori della cantina con i limiti oltre i quali ricevere un avviso, e la stampante di etichette.",
         "data": {
           "gemini_api_key": "Chiave API Gemini",
@@ -83,7 +83,7 @@
           "gemini_model": "Lascia gemini-flash-latest: usa sempre il modello Flash più recente.",
           "temperature_min": "Per conservare il vino: 10–16 °C.",
           "humidity_min": "Per conservare il vino: 60–80 %.",
-          "printer_device": "Facoltativo. Serve l'integrazione hass-niimbot; Suro stampa da solo le etichette."
+          "printer_device": "Facoltativo. Serve l'integrazione hass-niimbot; Tapon stampa da solo le etichette."
         }
       }
     },

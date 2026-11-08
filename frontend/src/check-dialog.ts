@@ -56,7 +56,7 @@ export class CheckDialog extends LitElement {
     this._busy = busy;
     this._result = null;
     try {
-      this._result = await this.card.ws({ type: "suro/check_wine", ...payload });
+      this._result = await this.card.ws({ type: "tapon/check_wine", ...payload });
     } catch {
       /* the card shows the error */
     } finally {
@@ -66,14 +66,14 @@ export class CheckDialog extends LitElement {
 
   private async _wish() {
     const w = this._result!.wine;
-    await this.card.ws({ type: "suro/wishlist_add", wine: w, where: "", wish_notes: "" });
+    await this.card.ws({ type: "tapon/wishlist_add", wine: w, where: "", wish_notes: "" });
     this.card.toast(`${wineTitle(w as any)} aggiunto ai desideri`);
     this._result = { ...this._result!, wished: [{ ...(w as any), match: "same", wish_id: "", source: "manual" }] };
   }
 
   private async _light() {
     const ids = this._result!.cellar.flatMap((c) => c.bottle_ids);
-    await this.card.ws({ type: "suro/highlight", source: "search", query: wineTitle(this._result!.wine as any),
+    await this.card.ws({ type: "tapon/highlight", source: "search", query: wineTitle(this._result!.wine as any),
       groups: [{ label: wineTitle(this._result!.wine as any), color: SEARCH_COLOR, bottle_ids: ids }] });
     this._close();
   }

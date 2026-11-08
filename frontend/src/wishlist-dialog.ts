@@ -15,7 +15,7 @@ export class WishlistDialog extends LitElement {
   }
 
   private async _remove(w: Wish) {
-    await this.card.ws({ type: "suro/wishlist_remove", wish_id: w.id });
+    await this.card.ws({ type: "tapon/wishlist_remove", wish_id: w.id });
     this.card.toast(`${wineTitle(w)} tolto dai desideri`);
   }
 
