@@ -88,3 +88,11 @@ def test_model_retired_messages():
     assert ai.model_retired("models/gemini-1.5-flash is not found for API version v1beta")
     assert not ai.model_retired("API key not valid. Please pass a valid API key.")
     assert not ai.model_retired("Resource has been exhausted (e.g. check quota).")
+
+
+def test_thinking_config():
+    assert ai.thinking_config("gemini-flash-latest") == {"thinkingLevel": "low"}
+    assert ai.thinking_config("gemini-3.8-flash") == {"thinkingLevel": "low"}
+    assert ai.thinking_config("gemini-flash-lite-latest") is None
+    assert ai.thinking_config("gemini-3.5-flash-lite") is None
+    assert ai.thinking_config("gemini-2.5-flash") is None

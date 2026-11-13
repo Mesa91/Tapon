@@ -16,6 +16,17 @@ API = "https://generativelanguage.googleapis.com/v1beta/models"
 # retired never breaks label reading.
 DEFAULT_MODEL = "gemini-flash-latest"
 TIMEOUT = 30  # per attempt; a busy model then falls back to Flash-Lite
+# Ragionamento ridotto sul Flash completo: circa metà del tempo, qualità quasi identica
+# per leggere un'etichetta e compilare la scheda. La Lite resta sul suo «minimal».
+THINKING_LEVEL = "low"
+
+
+def thinking_config(model: str) -> dict[str, Any] | None:
+    """thinkingConfig da mandare, o None se il modello non lo usa (Lite, serie 1.x/2.x)."""
+    name = (model or "").removeprefix("models/")
+    if "lite" in name or re.match(r"gemini-[12](\.|-)", name):
+        return None
+    return {"thinkingLevel": THINKING_LEVEL}
 
 TYPES = ("red", "white", "rose", "sparkling", "dessert")
 
@@ -329,7 +340,7 @@ async def async_generate(session, api_key: str, model: str, prompt: str, images:
 
 
 async def _async_call(session, api_key: str, model: str, prompt: str, images: list[str] | None,
-                      parse=None) -> dict[str, Any]:
+                      parse=None, thinking: bool = True) -> dict[str, Any]:
     import aiohttp
 
     parts: list[dict[str, Any]] = []
@@ -337,10 +348,10 @@ async def _async_call(session, api_key: str, model: str, prompt: str, images: li
         mime, data = _strip_data_url(image)
         parts.append({"inline_data": {"mime_type": mime, "data": data}})
     parts.append({"text": prompt})
-    body = {
-        "contents": [{"role": "user", "parts": parts}],
-        "generationConfig": {"temperature": 0.2, "responseMimeType": "application/json"},
-    }
+    config: dict[str, Any] = {"temperature": 0.2, "responseMimeType": "application/json"}
+    if thinking and (tc := thinking_config(model)):
+        config["thinkingConfig"] = tc
+    body = {"contents": [{"role": "user", "parts": parts}], "generationConfig": config}
     url = f"{API}/{model}:generateContent"
     try:
         async with session.post(
@@ -350,6 +361,9 @@ async def _async_call(session, api_key: str, model: str, prompt: str, images: li
             payload = await resp.json(content_type=None)
             if resp.status != 200:
                 message = ((payload or {}).get("error") or {}).get("message", "")
+                if resp.status == 400 and "thinking" in message.lower() and "thinkingConfig" in config:
+                    # questo modello non accetta il livello di ragionamento: si riprova senza
+                    return await _async_call(session, api_key, model, prompt, images, parse, thinking=False)
                 if resp.status == 404 or model_retired(message):
                     raise ModelNotFound(f"Il modello \"{model}\" non è più disponibile e non ne ho trovato un altro: "
                                         "controlla il modello nelle opzioni di Tapon.")
