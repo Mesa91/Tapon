@@ -80,3 +80,11 @@ def test_parse_menu():
                             "grape": "", "region": "", "food_pairings": "", "status": "ready", "bottles": 1,
                             "rating": 4.5}])
     assert "Brasato" in prompt and "4.5/5" in prompt
+
+
+def test_model_retired_messages():
+    assert ai.model_retired("This model models/gemini-2.5-flash is no longer available to new users. "
+                            "Please update your code to use models/gemini-3.8-flash")
+    assert ai.model_retired("models/gemini-1.5-flash is not found for API version v1beta")
+    assert not ai.model_retired("API key not valid. Please pass a valid API key.")
+    assert not ai.model_retired("Resource has been exhausted (e.g. check quota).")

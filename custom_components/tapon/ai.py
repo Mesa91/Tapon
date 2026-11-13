@@ -238,6 +238,16 @@ class ModelBusy(AIError):
     """Google is overloaded or too slow right now (503/500/timeout)."""
 
 
+_RETIRED = ("no longer available", "is not found", "not found for api version", "has been deprecated",
+            "is deprecated", "not supported for generatecontent", "please update your code to use")
+
+
+def model_retired(message: str) -> bool:
+    """True when Google says the model was retired or is unknown (whatever the HTTP status)."""
+    m = (message or "").lower()
+    return any(token in m for token in _RETIRED)
+
+
 _SKIP = ("image", "tts", "live", "audio", "embed", "robotics", "computer", "exp", "learnlm", "gemma", "nano")
 
 
@@ -340,15 +350,15 @@ async def _async_call(session, api_key: str, model: str, prompt: str, images: li
             payload = await resp.json(content_type=None)
             if resp.status != 200:
                 message = ((payload or {}).get("error") or {}).get("message", "")
+                if resp.status == 404 or model_retired(message):
+                    raise ModelNotFound(f"Il modello \"{model}\" non è più disponibile e non ne ho trovato un altro: "
+                                        "controlla il modello nelle opzioni di Tapon.")
                 if resp.status in (401, 403) or "API key" in message:
                     raise AIError("La chiave Gemini non è valida. Controllala nelle opzioni di Tapon.")
                 if resp.status in (500, 502, 503, 504):
                     raise ModelBusy("Gemini è sovraccarico in questo momento: riprova tra qualche minuto.")
                 if resp.status == 429:
                     raise AIError("Limite gratuito di Gemini raggiunto per ora: riprova più tardi.")
-                if resp.status == 404:
-                    raise ModelNotFound(f"Il modello \"{model}\" non è disponibile e non ne ho trovato un altro: "
-                                        "controlla il modello nelle opzioni di Tapon.")
                 raise AIError(f"Gemini ha risposto con un errore ({resp.status}): {message[:200]}")
     except TimeoutError as err:
         raise ModelBusy("Gemini non ha risposto in tempo: riprova tra qualche minuto.") from err
